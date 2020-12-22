@@ -1,39 +1,17 @@
 import tkinter as tk
-import re
-# import urllib
-# from bs4 import BeautifulSoup as bs4
-from selenium import webdriver
-
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
+import re, random, time, datetime
+from threading import Thread
 
 def get():
-    driver = webdriver.PhantomJS()
+    f = open('Kanji.txt', 'r')
+    lines = f.readlines()
 
-    delay = 10
+    line = random.choice(lines).split()
+    kanji = f'{line[1]} {line[2]} {line[3]}'
 
-    driver.get('https://www.transparent.com/word-of-the-day/today/japanese.html')
-    data_url = driver.find_element_by_id('js_wotd_frame').get_attribute('src')
-    driver.get(data_url)
+    print(kanji)
 
-    elements = ['js-wotd-wordsound-plus', 'js-wotd-word-transliterated', 'js-wotd-translation']
-    string = ''
-
-    for elem in elements:
-        try:
-            elem = WebDriverWait(driver, delay).until(EC.presence_of_element_located(
-                (By.CLASS_NAME, elem)))
-            string = f'{string} {elem.text}'
-        except TimeoutException:
-            print("Loading took too much time!")
-
-    driver.close()
-
-    print(string)
-
-    return string
+    return kanji
 
 class TransparentWin(tk.Tk):
     """ Transparent Tkinter Window Class. """
@@ -60,8 +38,10 @@ class TransparentWin(tk.Tk):
         self.Frame.bind('<Button-3>', self.exit)
         self.Frame.configure(width=150, height=100)
 
-    def exit(self, event):
-        self.destroy()
+        self.after(86400000, lambda: self.destroy())    # destroy window
+
+    def exit(self):
+        self.mainloop().destroy()
 
     def position(self):
         _filter = re.compile(r"(\d+)?x?(\d+)?([+-])(\d+)([+-])(\d+)")
@@ -122,10 +102,8 @@ class Drag:
         self.Par.unbind('<ButtonRelease-1>')
         self.Par.unbind('<Motion>')
 
-
-def __run__():
-    TransparentWin(get()).mainloop()
-
-
 if __name__ == '__main__':
-    __run__()
+    while True:
+        word = get()
+        T = TransparentWin(word)
+        T.mainloop()
